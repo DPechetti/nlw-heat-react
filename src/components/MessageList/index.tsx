@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
+import socketClient from 'socket.io-client'
 import { api } from '../../services/api'
-
 import styles from './styles.module.scss'
 import logo from '../../assets/logo.svg'
 
@@ -13,8 +13,27 @@ type Message = {
   }
 }
 
+const messagesQueue: Message[] = []
+
+const socket = socketClient('http://localhost:3333')
+
+socket.on('newMessage', (newMessage: Message) => messagesQueue.push(newMessage))
+
 export function MessageList() {
   const [messages, setMessages] = useState<Message[]>([])
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (messagesQueue.length > 0) 
+        setMessages(prevState => [
+          messagesQueue[0],
+          prevState[0],
+          prevState[1]
+        ].filter(Boolean))
+
+        messagesQueue.shift()
+    }, 3000)
+  }, [])
 
   useEffect(() => {
     api.get<Message[]>('/messages/last3').then(response => setMessages(response.data))

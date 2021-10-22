@@ -47,6 +47,8 @@ export function AuthProvider(props: AuthProvider) {
     })
     
     const { token, user } = response.data
+
+    api.defaults.headers.common.authorization = `Bearer ${token}`
     
     localStorage.setItem('token', token)
     
